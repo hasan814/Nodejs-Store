@@ -1,5 +1,6 @@
 import { fileURLToPath } from "url";
 
+import createError from "http-errors";
 import allRoutes from "./router/router.js";
 import mongoose from "mongoose";
 import express from "express";
@@ -59,14 +60,13 @@ export class Application {
   }
   errorHandler() {
     this.#app.use((req, res, next) => {
-      return res
-        .status(404)
-        .json({ statusCode: 404, message: "Route not Found" });
+      next(createError.NotFound("Route not Found"));
     });
     this.#app.use((error, req, res, next) => {
-      const statusCode = error.status || 500;
-      const message = error.message || "InternalServerError";
-      return res.status(statusCode).json({ statusCode, message });
+      const serverError = createError.InternalServerError();
+      const statusCode = error.status || serverError.status;
+      const message = error.message || serverError.message;
+      return res.status(statusCode).json({ errors: { statusCode, message } });
     });
   }
 }

@@ -1,10 +1,11 @@
 import { fileURLToPath } from "url";
 import { connect } from "mongoose";
 
+import allRoutes from "./router/router.js";
 import express from "express";
+import dotenv from "dotenv";
 import path from "path";
 import http from "http";
-import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -40,7 +41,9 @@ export class Application {
       console.log(`Failed to Connect DB: ${error}`);
     }
   }
-  createRoutes() {}
+  createRoutes() {
+    this.#app.use(allRoutes);
+  }
   errorHandler() {
     this.#app.use((req, res, next) => {
       return res

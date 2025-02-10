@@ -10,13 +10,13 @@ const usersSchema = new Schema({
   lastName: { type: String },
   birthday: { type: String },
   password: { type: String },
-  phone: { type: String },
+  mobile: { type: String, required: true },
   otp: {
     type: Object,
-    default: { code: 0, expires: 0 },
+    default: { code: 0, expiresIn: 0 },
   },
 });
 
 const UsersModel = model("Users", usersSchema);
 
-export default { UsersModel };
+export default UsersModel;

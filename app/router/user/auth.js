@@ -6,25 +6,22 @@ const UserAuthRouter = Router();
 
 /**
  * @swagger
- * tags:
- *    name : User-Authentication
- *    description : user-auth section
- */
-
-/**
- * @swagger
  * /user/login:
  *   post:
  *     tags: [User-Authentication]
  *     summary: Login User in userpanel with phone number
  *     description: One-time password (OTP) login using phone number
- *     parameters:
- *       - name: mobile
- *         description: FA-IRI phone number (e.g., 09123456789)
- *         in: formData
- *         required: true
- *         type: string
- *         example: "09123456789"   # Example value to show in Swagger UI
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               mobile:
+ *                 type: string
+ *                 pattern: '^[0-9]{10}$'  # Validates that the number is exactly 10 digits
+ *                 example: "09123456789"  # Example value to show in Swagger UI
  *     responses:
  *       201:
  *         description: Successfully logged in and OTP sent

@@ -1,7 +1,9 @@
 import { fileURLToPath } from "url";
 
+import swaggerJSDoc from "swagger-jsdoc";
 import createError from "http-errors";
 import allRoutes from "./router/router.js";
+import swaggerUI from "swagger-ui-express";
 import mongoose from "mongoose";
 import express from "express";
 import morgan from "morgan";
@@ -30,6 +32,24 @@ export class Application {
     this.#app.use(express.json());
     this.#app.use(express.urlencoded({ extended: true }));
     this.#app.use(express.static(path.join(__dirname, "..", "public")));
+    const swaggerOptions = {
+      definition: {
+        openapi: "3.0.0",
+        info: {
+          title: "Node.js Store Project",
+          version: "2.0.0",
+          description: "API documentation for the Node.js Store Project",
+          contact: {
+            name: "Hasan Moosavi",
+            email: "h.mousavi910@gmail",
+          },
+        },
+        servers: [{ url: "http://localhost:3000" }],
+      },
+      apis: ["./app/router/**/*.js"],
+    };
+    const swaggerSpec = swaggerJSDoc(swaggerOptions);
+    this.#app.use("/api-doc", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
   }
   createServer() {
     http.createServer(this.#app).listen(this.#PORT, () => {

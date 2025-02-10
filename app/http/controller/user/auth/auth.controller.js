@@ -1,17 +1,23 @@
 import { randomNumberGenerator } from "../../../../utils/randomNumber.js";
 import { EXPIRES_IN, USER_ROLE } from "../../../../utils/constants.js";
-import { authSchema } from "../../../validators/user/auth.schema.js";
+import { signAccessToken } from "../../../../utils/signAccessToken.js";
 import { Controller } from "../../controller.js";
 
 import createHttpError from "http-errors";
 import UsersModel from "../../../models/users.js";
 
+import {
+  checkOtpSchema,
+  getOtpSchema,
+} from "../../../validators/user/auth.schema.js";
+
 class UserController extends Controller {
-  async login(req, res, next) {
+  async getOtp(req, res, next) {
     try {
-      await authSchema.validateAsync(req.body);
+      await getOtpSchema.validateAsync(req.body);
       const { mobile } = req.body;
-      console.log(mobile);
+      if (!mobile)
+        throw createHttpError.BadRequest("Mobile number is required!");
       const code = randomNumberGenerator();
       const result = await this.saveUser(mobile, code);
       if (!result)
@@ -25,7 +31,25 @@ class UserController extends Controller {
         },
       });
     } catch (error) {
-      next(createHttpError.BadRequest(error.message));
+      next(error);
+    }
+  }
+  async checkOtp(req, res, next) {
+    try {
+      console.log(req.body);
+      await checkOtpSchema.validateAsync(req.body);
+      const { mobile, code } = req.body;
+      const user = await UsersModel.findOne({ mobile });
+      if (!user) throw createHttpError.NotFound("User Not Found");
+      if (user.otp.code !== +code)
+        throw createHttpError.Unauthorized("Code is not Valid");
+      const now = Date.now();
+      if (+user.otp.expiresIn < now)
+        throw createHttpError.Unauthorized("Otp Code is Expired!");
+      const accessToken = await signAccessToken(user._id);
+      return res.json({ data: { accessToken } });
+    } catch (error) {
+      next(error);
     }
   }
   async saveUser(mobile, code) {
